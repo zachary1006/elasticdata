@@ -25,17 +25,15 @@ class CsvIngest {
     client.execute {
       createIndex(indexName).mappings(
         mapping("one").fields(
-          nestedField("location").fields(
-            intField("RegionID"),
-            textField("RegionName"),
-            textField("StateName"),
-            intField("SizeRank")
-          ),
+          intField("RegionID"),
+          textField("RegionName"),
+          textField("StateName"),
+          intField("SizeRank"),
           nestedField("dates").fields(
-            dateField("date"),
+            dateField("date").format("yyyy-MM"),
             doubleField("days")
           )
-        ).dateDetection(true).dynamicDateFormats("yyyy-MM")
+        )
       )
     }.await // TODO asynchronous calls
 
@@ -52,10 +50,12 @@ class CsvIngest {
           } yield {
             Map("date" -> date, "days" -> days)
           }
-          val result = Map("location" -> zipped.take(4).toMap, "dates" -> test)
+          val result = zipped.take(4).toMap ++ Map("dates" -> test)
           indexInto(indexName / "one") fields result
         }
       )
     }.await // TODO asynchronous calls
+
+    client.close()
   }
 }
