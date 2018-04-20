@@ -19,7 +19,6 @@ class CsvIngest {
 
     // TODO is there a way to customize tototoshi's return values, so that they match the JSON I want right away? Or, can I programmatically handle it so that everything happens the same way?
     val reader: CSVReader = CSVReader.open(fileLocation)
-    //  val mapped = reader.allWithHeaders()
     val mapped: List[List[String]] = reader.all()
     reader.close()
 
@@ -29,32 +28,29 @@ class CsvIngest {
         mapping("one").fields(
           intField("RegionID"),
           textField("RegionName"),
-          textField("StateName"),
-          intField("SizeRank"),
-          nestedField("dates").fields(
-            dateField("date").format("yyyy-MM"),
-            doubleField("days")
-          )
+          dateField("month").format("yyyy-MM"),
+          doubleField("numSales")
         )
       )
     }.await // TODO asynchronous calls
 
     val indexResult = client.execute{
       bulk(
-        for {
+        (for {
           headers <- mapped.take(1)
           stringMap <- mapped.drop(1)
         } yield {
           val zipped = headers.zip(stringMap)
           // break out last ones, and put in their own map
-          val test = for {
+          val dateMap = for {
             (date, days) <- zipped.drop(4)
           } yield {
-            Map("date" -> date, "days" -> days)
+            Map("month" -> date, "numSales" -> days)
           }
-          val result = zipped.take(4).toMap ++ Map("dates" -> test)
-          indexInto(indexName / "one") fields result
-        }
+          dateMap.map(m => {
+            indexInto(indexName / "one") fields (m ++ zipped.filter(item => item._1 == "RegionID").toMap ++ zipped.filter(item => item._1 == "RegionName").toMap)
+          })
+        }).flatten
       )
     }.await // TODO asynchronous calls
 
