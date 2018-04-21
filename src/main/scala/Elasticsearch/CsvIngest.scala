@@ -56,6 +56,89 @@ class CsvIngest {
     client.close()
   }
 
+  def ingestCitySalesCounts {
+    // FIXME this does not work, for some unknown reason.
+    val fileLocation = "D:\\Cal State Fullerton MSE Program\\CPSC 597 II Graduate Project\\Sale_Counts_Seas_Adj_City.csv"
+    val indexName = "city_seasonally_adjusted_sale_counts"
+
+    val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
+
+    import com.sksamuel.elastic4s.http.ElasticDsl._
+
+    /**
+      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
+      */
+    import com.github.tototoshi.csv._
+
+    val reader: CSVReader = CSVReader.open(fileLocation)
+    val mapped: List[List[String]] = reader.all()
+    reader.close()
+
+
+    client.execute {
+      createIndex(indexName).mappings(
+        mapping("one").fields(
+          intField("RegionID"),
+          textField("RegionName"),
+          textField("StateName"),
+          intField("SizeRank"),
+          dateField("month").format("yyyy-MM"),
+          doubleField("numSales")
+        )
+      )
+    }.await // TODO asynchronous calls
+
+    client.execute {
+      bulk(
+        (for {
+          headers <- mapped.take(1)
+          stringMap <- mapped.drop(1).take(3000)
+        } yield {
+          val zipped = headers.zip(stringMap)
+          // break out last ones, and put in their own map
+          val dateMap = for {
+            (date, days) <- zipped.drop(4)
+          } yield {
+            Map("month" -> date, "numSales" -> days)
+          }
+          dateMap.map(m => {
+            indexInto(indexName / "one") fields (m
+              ++ zipped.filter(item => item._1 == "RegionID").toMap
+              ++ zipped.filter(item => item._1 == "RegionName").toMap
+              ++ zipped.filter(item => item._1 == "StateName").toMap
+              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
+          })
+        }).flatten
+      )
+    }.await // TODO asynchronous calls
+
+    client.execute {
+      bulk(
+        (for {
+          headers <- mapped.take(1)
+          stringMap <- mapped.drop(1).drop(3000)
+        } yield {
+          val zipped = headers.zip(stringMap)
+          // break out last ones, and put in their own map
+          val dateMap = for {
+            (date, days) <- zipped.drop(4)
+          } yield {
+            Map("month" -> date, "numSales" -> days)
+          }
+          dateMap.map(m => {
+            indexInto(indexName / "one") fields (m
+              ++ zipped.filter(item => item._1 == "RegionID").toMap
+              ++ zipped.filter(item => item._1 == "RegionName").toMap
+              ++ zipped.filter(item => item._1 == "StateName").toMap
+              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
+          })
+        }).flatten
+      )
+    }.await // TODO asynchronous calls
+
+    client.close()
+  }
+
   def ingestNipomoRealEstate {
     val fileLocation = "D:\\Cal State Fullerton MSE Program\\CPSC 597 II Graduate Project\\RealEstate.csv"
     val indexName = "nipomo_real_estate"
