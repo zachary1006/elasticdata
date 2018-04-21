@@ -2,6 +2,8 @@ package Elasticsearch
 
 import com.sksamuel.elastic4s.ElasticsearchClientUri
 import com.sksamuel.elastic4s.http.HttpClient
+import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.github.tototoshi.csv._
 
 class CsvIngest {
   def ingestCountySalesCounts {
@@ -9,13 +11,6 @@ class CsvIngest {
     val indexName = "countyseasonallyadjustedsalecounts"
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
-
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
 
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
@@ -62,13 +57,6 @@ class CsvIngest {
     val indexName = "city_seasonally_adjusted_sale_counts"
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
-
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
 
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
@@ -145,13 +133,6 @@ class CsvIngest {
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
 
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
-
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
     reader.close()
@@ -193,13 +174,6 @@ class CsvIngest {
     val indexName = "age_of_inventory_metro_public"
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
-
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
 
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
@@ -245,13 +219,6 @@ class CsvIngest {
     val indexName = "city_median_listing_price_all_homes"
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
-
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
 
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
@@ -331,13 +298,6 @@ class CsvIngest {
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
 
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
-
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
     reader.close()
@@ -416,13 +376,6 @@ class CsvIngest {
     val indexName = "city_zhvi_all_homes"
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
-
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
 
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
@@ -791,13 +744,6 @@ class CsvIngest {
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
 
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
-
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
     reader.close()
@@ -850,13 +796,6 @@ class CsvIngest {
     val indexName = "inventory_measure_city_public"
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
-
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
 
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
@@ -964,13 +903,6 @@ class CsvIngest {
     val indexName = "sale_prices_city"
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
-
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
-    /**
-      * use tototoshi's scala-csv to read csv files in, then put them into elasticsearch
-      */
-    import com.github.tototoshi.csv._
 
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
