@@ -395,7 +395,7 @@ class CsvIngest {
   def ingestCityZhviAllHomes {
     //HACK this request cannot take place at once because it overflows memory. Take it in chunks.
     val fileLocation = "D:\\Cal State Fullerton MSE Program\\CPSC 597 II Graduate Project\\City_Zhvi_AllHomes.csv"
-    val indexName = "city_zhvi_all_homes"
+    val indexName = "city_zhvi_all_homes_2"
 
     val client = HttpClient(ElasticsearchClientUri("localhost", 9200))
 
@@ -408,10 +408,10 @@ class CsvIngest {
       createIndex(indexName).mappings(
         mapping("one").fields(
           intField("RegionID"),
-          textField("RegionName"),
-          textField("State"),
-          textField("Metro"),
-          textField("CountyName"),
+          keywordField("RegionName"),
+          keywordField("State"),
+          keywordField("Metro"),
+          keywordField("CountyName"),
           intField("SizeRank"),
           dateField("month").format("yyyy-MM"),
           doubleField("median_price")
@@ -419,344 +419,39 @@ class CsvIngest {
       )
     }.await // TODO asynchronous calls
 
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
+    val oneThousandSets = for {
+      r <- 1 to 12000 by 1000
+    } yield {
+      mapped.drop(r).take(1000)
+    }
 
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(1000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-//
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(2000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(3000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(4000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(5000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(6000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(7000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(8000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(9000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(10000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(11000).take(1000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
-//    client.execute {
-//      bulk(
-//        (for {
-//          headers <- mapped.take(1)
-//          stringMap <- mapped.drop(1).drop(12000) // HACK taking the whole file is too big; we need to index it in chunks
-//        } yield {
-//          val zipped = headers.zip(stringMap)
-//          // break out last ones, and put in their own map
-//          val dateMap = for {
-//            (date, days) <- zipped.drop(6)
-//          } yield {
-//            Map("month" -> date, "median_price" -> days)
-//          }
-//          dateMap.map(m => {
-//            indexInto(indexName / "one") fields (m
-//              ++ zipped.filter(item => item._1 == "RegionID").toMap
-//              ++ zipped.filter(item => item._1 == "RegionName").toMap
-//              ++ zipped.filter(item => item._1 == "State").toMap
-//              ++ zipped.filter(item => item._1 == "Metro").toMap
-//              ++ zipped.filter(item => item._1 == "CountyName").toMap
-//              ++ zipped.filter(item => item._1 == "SizeRank").toMap)
-//          })
-//        }).flatten
-//      )
-//    }.await // TODO asynchronous calls
-
+    for {
+      stringList <- oneThousandSets
+    } client.execute {
+        bulk(
+          (for {
+            headers <- mapped.take(1)
+            stringMap <- stringList
+          } yield {
+            val zipped = headers.zip(stringMap)
+            val dateMap = for {
+              (date, days) <- zipped.drop(6)
+            } yield {
+              Map("month" -> date, "median_price" -> days)
+            }
+            dateMap.map(m => {
+              indexInto(indexName / "one") fields (m
+                ++ zipped.filter(item => item._1 == "RegionID").toMap
+                ++ zipped.filter(item => item._1 == "RegionName").toMap
+                ++ zipped.filter(item => item._1 == "State").toMap
+                ++ zipped.filter(item => item._1 == "Metro").toMap
+                ++ zipped.filter(item => item._1 == "CountyName").toMap
+                ++ zipped.filter(item => item._1 == "SizeRank").toMap)
+            })
+          }).flatten
+        )
+      }.await // TODO asynchronous calls
+    
     client.close()
   }
 
@@ -936,7 +631,7 @@ class CsvIngest {
         mapping("one").fields(
           intField("RegionID"),
           textField("RegionName"),
-          textField("StateName"),
+          keywordField("StateName"),
           intField("SizeRank"),
           dateField("month").format("yyyy-MM"),
           doubleField("avg_sales_prices")
@@ -948,7 +643,7 @@ class CsvIngest {
       bulk(
         (for {
           headers <- mapped.take(1)
-          stringMap <- mapped.drop(1).take(3000) // HACK taking the whole file is too big; we need to index it in chunks
+          stringMap <- mapped.drop(1) // HACK taking the whole file is too big; we need to index it in chunks
         } yield {
           val zipped = headers.zip(stringMap)
           // break out last ones, and put in their own map
