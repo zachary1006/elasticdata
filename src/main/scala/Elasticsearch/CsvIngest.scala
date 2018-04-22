@@ -250,10 +250,10 @@ class CsvIngest {
     client.execute {
       createIndex(indexName).mappings(
         mapping("one").fields(
-          textField("RegionName"),
-          textField("State"),
-          textField("Metro"),
-          textField("CountyName"),
+          keywordField("RegionName"),
+          keywordField("State"),
+          keywordField("Metro"),
+          keywordField("CountyName"),
           intField("SizeRank"),
           dateField("month").format("yyyy-MM"),
           doubleField("median_price")
@@ -270,9 +270,9 @@ class CsvIngest {
           val zipped = headers.zip(stringMap)
           // break out last ones, and put in their own map
           val dateMap = for {
-            (date, days) <- zipped.drop(5)
+            (date, price) <- zipped.drop(5)
           } yield {
-            Map("month" -> date, "numSales" -> days)
+            Map("month" -> date, "median_price" -> price)
           }
           dateMap.map(m => {
             indexInto(indexName / "one") fields (m
@@ -295,9 +295,9 @@ class CsvIngest {
           val zipped = headers.zip(stringMap)
           // break out last ones, and put in their own map
           val dateMap = for {
-            (date, days) <- zipped.drop(5)
+            (date, price) <- zipped.drop(5)
           } yield {
-            Map("month" -> date, "numSales" -> days)
+            Map("month" -> date, "median_price" -> price)
           }
           dateMap.map(m => {
             indexInto(indexName / "one") fields (m
