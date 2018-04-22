@@ -6,7 +6,7 @@ import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.github.tototoshi.csv._
 
 class CsvIngest {
-  def ingestWithHeaders(fileLocation: String, indexName: String, indexMapping: String, client: HttpClient) = {
+  def ingestWithHeaders(fileLocation: String, indexName: String, indexMapping: Option[String], client: HttpClient) = {
     val reader: CSVReader = CSVReader.open(fileLocation)
     val mapped: List[List[String]] = reader.all()
     reader.close()
@@ -18,7 +18,7 @@ class CsvIngest {
           stringMap <- mapped.drop(1)
         } yield {
           val zipped = headers.zip(stringMap).toMap
-          indexInto(indexName / indexMapping) fields zipped
+          indexInto(indexName / indexMapping.getOrElse("default")) fields zipped
         }
       )
     }.await // TODO asynchronous calls
