@@ -12,7 +12,7 @@ object Main extends App {
   // Name to give the new index. Must be all lowercase, no spaces
   val indexName: String = "test_csv"
 
-  // Name to give the new mapping. If none is given, "default" is used. Example: Some["my_index"]
+  // Name to give the new mapping. If none is given, "default" is used. Example: Some("my_index")
   val indexMapping: Option[String] = None
 
   val client = HttpClient(ElasticsearchClientUri("localhost", port))
@@ -22,7 +22,7 @@ object Main extends App {
 
   result match {
     case Right(success) => println("Successful ingestion")
-    case Left(fail) => println("Failed ingestion")
+    case Left(fail) => println("Failed ingestion" + "\n" + fail)
   }
 
   client.close()
