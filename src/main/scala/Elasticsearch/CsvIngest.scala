@@ -64,7 +64,9 @@ class CsvIngest {
             Map("month" -> date, "numSales" -> days)
           }
           dateMap.map(m => {
-            indexInto(indexName / "one") fields (m ++ zipped.filter(item => item._1 == "RegionID").toMap ++ zipped.filter(item => item._1 == "RegionName").toMap)
+            indexInto(indexName / "one") fields (m
+              ++ zipped.filter(item => item._1 == "RegionID").toMap
+              ++ zipped.filter(item => item._1 == "RegionName").toMap)
           })
         }).flatten
       )
